@@ -43,7 +43,7 @@ class HyperSpectralImage:
             if ratio > 3 or ratio < 0.3:
                 raise ValueError("The excitation wavelength and the wavelengths array must be in the same units (nanometers)")
 
-            return [1/self.excitationWavelength-1/wavelength for wavelength in self.wavelengths]
+            return [(1/self.excitationWavelength-1/wavelength)*1e7 for wavelength in self.wavelengths]
         else:
             raise ValueError("You must set the excitationWavelength to compute the frequency shift in wavenumbers")
 
@@ -54,13 +54,6 @@ class HyperSpectralImage:
     @property
     def laser(self):
         return self.excitationWavelength
-
-    # @property
-    # def background(self):
-    #     return self.backgroundIntensity
-    # @setter.background
-    # def background(self, intensity):
-    #     self.backgroundIntensity = intensity
     
     def setFolderPath(self, folderPath):
         self.folderPath = folderPath
@@ -84,11 +77,11 @@ class HyperSpectralImage:
         self.data = []
 
     def waveNumber(self, waves, laser=None):
-        if laser is None:
-            laser = self.laser
+        if self.excitationWavelength != laser:
+            print("Set excitationWavelength in HyperSpectralImage to the laser wavelength")
+            self.excitationWavelength = laser
 
-        waveNumber = ((1 / laser) - (1 / waves)) * 10 ** 7
-        return waveNumber.round(0)
+        return self.ramanShifts()
 
     def addSpectrum(self, x, y, spectrum):
         self.data.append(SpectralPoint(x, y, spectrum))
