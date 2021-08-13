@@ -216,24 +216,33 @@ class HyperSpectralImage:
 
         return foundBackground
 
-    # Save
-    def saveCaptureCSV(self, data=None, countHeight=None, countWidth=None):
-        if data is None:
-            pass
-        else:
-            if self.fileName == "":
-                self.fileName = "spectrum"
+    def saveData(self, data, filepath):
+        rootpath, ext = os.path.splitext(filepath)
+        if ext != ".csv":
+            raise ValueError("Only CSV supported. Use a filename with .csv extension.")
+        if len(data) != len(self.wavelength):
+            raise ValueError("Data is incompatible with expected wavelengths")
 
-            newPath = self.folderPath + "/" + "RawData"
-            os.makedirs(newPath, exist_ok=True)
-            if countHeight is None and countWidth is None:
-                path = os.path.join(newPath, f"{self.fileName}_background")
-            else:
-                path = os.path.join(newPath, f"{self.fileName}_x{countWidth}_y{countHeight}")
-            with open(path + ".csv", "w+") as f:
-                for i, x in enumerate(self.waveNumber(self.wavelength)):
-                    f.write(f"{x},{data[i]}\n")
-                f.close()
+        with open(filepath, "w+") as f:
+            for i, x in enumerate(self.waveNumber(self.wavelength)):
+                f.write(f"{x},{data[i]}\n")
+            f.close()
+
+    # Save
+    def saveCaptureCSV(self, data, filepath=None, countHeight=None, countWidth=None):
+        if filepath == None:
+            fileName = self.fileName
+
+        newPath = self.folderPath + "/" + "RawData"
+        os.makedirs(newPath, exist_ok=True)
+        if countHeight is None and countWidth is None:
+            path = os.path.join(newPath, f"{self.fileName}_background")
+        else:
+            path = os.path.join(newPath, f"{self.fileName}_x{countWidth}_y{countHeight}")
+        with open(path + ".csv", "w+") as f:
+            for i, x in enumerate(self.waveNumber(self.wavelength)):
+                f.write(f"{x},{data[i]}\n")
+            f.close()
 
     def saveImage(self, matrixRGB):
         path = self.folderPath + "/"
