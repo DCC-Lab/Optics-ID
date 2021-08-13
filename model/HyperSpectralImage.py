@@ -19,11 +19,11 @@ Pixel = SpectralPoint
 class HyperSpectralImage:
     def __init__(self):
         self.spectralPoints = []
-        self.wavelength = []
+        self.wavelengths = []
+        self.excitationWavelength = None
         self.backgroundIntensity = []
         self.folderPath = ""
         self.fileName = ""
-        self.excitationWavelength = None
 
     def dataWithoutBackground(self):
         dataWithoutBg = []
@@ -33,6 +33,19 @@ class HyperSpectralImage:
             spectrum = np.array(item.spectrum) - np.array(self.background)
             dataWithoutBg.append(Pixel(x, y, spectrum))
         return dataWithoutBg
+
+    @property
+    def ramanShifts(self):
+        if self.excitationWavelength is not None and len(self.wavelengths) > 0:
+            ratio = self.excitationWavelength/self.wavelengths[0]
+            if self.excitationWavelength < 450 or self.excitationWavelength > 1600:
+                raise ValueError("The wavelengths are expected to be in nanometers")
+            if ratio > 3 or ratio < 0.3:
+                raise ValueError("The excitation wavelength and the wavelengths array must be in the same units (nanometers)")
+
+            return [1/self.excitationWavelength-1/wavelength for wavelength in self.wavelengths]
+        else:
+            raise ValueError("You must set the excitationWavelength to compute the frequency shift in wavenumbers")
 
     @property
     def data(self):
@@ -59,10 +72,10 @@ class HyperSpectralImage:
         self.backgroundIntensity = background
 
     def setWavelength(self, wavelength):
-        self.wavelength = np.array(wavelength)
+        self.wavelengths = np.array(wavelength)
 
     def deleteWavelength(self):
-        self.wavelength = []
+        self.wavelengths = []
 
     def deleteBackground(self):
         self.background = []
@@ -238,11 +251,11 @@ class HyperSpectralImage:
         rootpath, ext = os.path.splitext(filepath)
         if ext != ".csv":
             raise ValueError("Only CSV supported. Use a filename with .csv extension.")
-        if len(intensity) != len(self.wavelength):
+        if len(intensity) != len(self.wavelengths):
             raise ValueError("Data is incompatible with expected wavelengths: not same number of points.")
 
         with open(filepath, "w+") as f:
-            for i, wavelength in enumerate(self.waveNumber(self.wavelength)):
+            for i, wavelength in enumerate(self.waveNumber(self.wavelengths)):
                 f.write(f"{wavelength},{intensity[i]}\n")
             f.close()
 
@@ -258,7 +271,7 @@ class HyperSpectralImage:
         else:
             path = os.path.join(newPath, f"{self.fileName}_x{countWidth}_y{countHeight}")
         with open(path + ".csv", "w+") as f:
-            for i, x in enumerate(self.waveNumber(self.wavelength)):
+            for i, x in enumerate(self.waveNumber(self.wavelengths)):
                 f.write(f"{x},{data[i]}\n")
             f.close()
 
@@ -283,9 +296,9 @@ class HyperSpectralImage:
             path = os.path.join(newPath, f"{self.fileName}_withoutBackground_x{x}_y{y}")
             with open(path + ".csv", "w+") as f:
                 if alreadyWaveNumber == True:
-                    for ind, x in enumerate(self.wavelength):
+                    for ind, x in enumerate(self.wavelengths):
                         f.write(f"{x},{spectrum[ind]}\n")
                 else:
-                    for ind, x in enumerate(self.waveNumber(self.wavelength)):
+                    for ind, x in enumerate(self.waveNumber(self.wavelengths)):
                         f.write(f"{x},{spectrum[ind]}\n")
                 f.close()
