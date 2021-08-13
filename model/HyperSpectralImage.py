@@ -9,19 +9,21 @@ import csv
 import os
 import re
 
-class Pixel(NamedTuple):
+class SpectralPoint(NamedTuple):
     x: int = None
     y: int = None
     spectrum: object = None
 
+Pixel = SpectralPoint
+
 class HyperSpectralImage:
     def __init__(self):
-        self.data = []
+        self.spectralPoints = []
         self.wavelength = []
-        self.background = []
+        self.backgroundIntensity = []
         self.folderPath = ""
         self.fileName = ""
-        self.laser = None
+        self.excitationWavelength = None
 
     def dataWithoutBackground(self):
         dataWithoutBg = []
@@ -32,9 +34,21 @@ class HyperSpectralImage:
             dataWithoutBg.append(Pixel(x, y, spectrum))
         return dataWithoutBg
 
-    def setLaserWavelength(self, laser):
-        self.laser = laser
+    @property
+    def data(self):
+        return self.spectralPoints
 
+    @property
+    def laser(self):
+        return self.excitationWavelength
+
+    # @property
+    # def background(self):
+    #     return self.backgroundIntensity
+    # @setter.background
+    # def background(self, intensity):
+    #     self.backgroundIntensity = intensity
+    
     def setFolderPath(self, folderPath):
         self.folderPath = folderPath
 
@@ -42,7 +56,7 @@ class HyperSpectralImage:
         self.fileName = fileName
 
     def setBackground(self, background):
-        self.background = np.array(background)
+        self.backgroundIntensity = background
 
     def setWavelength(self, wavelength):
         self.wavelength = np.array(wavelength)
@@ -64,7 +78,7 @@ class HyperSpectralImage:
         return waveNumber.round(0)
 
     def addSpectrum(self, x, y, spectrum):
-        self.data.append(Pixel(x, y, spectrum))
+        self.data.append(SpectralPoint(x, y, spectrum))
 
     def spectrum(self, x, y, data):
         spectrum = None
@@ -216,16 +230,20 @@ class HyperSpectralImage:
 
         return foundBackground
 
-    def saveData(self, data, filepath):
+    def saveAllSpectra(self, filepathPattern):
+        pass
+
+    def saveSpectrum(self, spectralPoint, filepath):
+        x, y, intensity  = spectralPoint
         rootpath, ext = os.path.splitext(filepath)
         if ext != ".csv":
             raise ValueError("Only CSV supported. Use a filename with .csv extension.")
-        if len(data) != len(self.wavelength):
-            raise ValueError("Data is incompatible with expected wavelengths")
+        if len(intensity) != len(self.wavelength):
+            raise ValueError("Data is incompatible with expected wavelengths: not same number of points.")
 
         with open(filepath, "w+") as f:
-            for i, x in enumerate(self.waveNumber(self.wavelength)):
-                f.write(f"{x},{data[i]}\n")
+            for i, wavelength in enumerate(self.waveNumber(self.wavelength)):
+                f.write(f"{wavelength},{intensity[i]}\n")
             f.close()
 
     # Save
