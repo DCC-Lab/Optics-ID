@@ -209,7 +209,7 @@ class MicroRamanView(QWidget, Ui_microRamanView):  # type: QWidget
         else:
             self.lightConnected = True
 
-    def connect_stage(self):  # Model
+    def connect_stage(self):  # MicroscopeDevice
         log.debug("Initializing devices...")
         index = self.cmb_selectStage.currentIndex()
         if index == 0:
@@ -227,7 +227,7 @@ class MicroRamanView(QWidget, Ui_microRamanView):  # type: QWidget
             raise Exception('The sutter is not connected!')
         self.positionSutter = self.stageDevice.position()
 
-    def connect_detection(self):  # Model
+    def connect_detection(self):  # MicroscopeDevice
         if self.le_laser.text() == "":
             self.error_laser_wavelength()
         else:
@@ -301,7 +301,7 @@ class MicroRamanView(QWidget, Ui_microRamanView):  # type: QWidget
         self.saveWorker.moveToThread(self.saveThread)
         self.saveThread.started.connect(self.saveWorker.run)
 
-    def create_matrix_raw_data(self):  # Model
+    def create_matrix_raw_data(self):  # MicroscopeDevice
         self.matrixRawData = np.zeros((self.height, self.width, self.dataLen))
 
     def create_matrix_rgb(self):  # Controller? GUI? TODO
@@ -324,7 +324,7 @@ class MicroRamanView(QWidget, Ui_microRamanView):  # type: QWidget
         self.plotBlack = self.plotItem.plot()
         self.plotItem.enableAutoRange()
 
-    def create_matrix_data_without_background(self):  # Model
+    def create_matrix_data_without_background(self):  # MicroscopeDevice
         background = self.backgroundData
         background = background.reshape((1, 1, len(background)))
         background = np.vstack((background, ) * self.height)
@@ -416,7 +416,7 @@ class MicroRamanView(QWidget, Ui_microRamanView):  # type: QWidget
         else:
             print('What the hell is going on?!')
 
-    def set_exposure_time(self, time_in_ms=None, update=True):  # Model
+    def set_exposure_time(self, time_in_ms=None, update=True):  # MicroscopeDevice
         if time_in_ms is not None:
             expositionTime = time_in_ms
 
@@ -427,7 +427,7 @@ class MicroRamanView(QWidget, Ui_microRamanView):  # type: QWidget
         if update:
             self.set_integration_time()
 
-    def set_integration_time(self):  # Model
+    def set_integration_time(self):  # MicroscopeDevice
         try:
             if self.integrationTimeAcq >= self.exposureTime:
                 self.integrationCountAcq = self.integrationTimeAcq // self.exposureTime
@@ -475,7 +475,7 @@ class MicroRamanView(QWidget, Ui_microRamanView):  # type: QWidget
         self.sb_highBlue.setValue(self.maxWaveLength)
 
     # Acquisition
-    def spectrum_pixel_acquisition(self):  # Model
+    def spectrum_pixel_acquisition(self):  # MicroscopeDevice
         # self.setExposureTime()
         self.isAcquisitionDone = False
 
@@ -484,7 +484,7 @@ class MicroRamanView(QWidget, Ui_microRamanView):  # type: QWidget
             self.integrate_data()
             self.dataPixel = np.mean(np.array(self.movingIntegrationData()), 0)
 
-    def acquire_background(self):  # Model
+    def acquire_background(self):  # MicroscopeDevice
         if self.folderPath == "":
             self.error_folder_name()
 
@@ -503,7 +503,7 @@ class MicroRamanView(QWidget, Ui_microRamanView):  # type: QWidget
 
         self.isAcquiringBackground = False
 
-    def integrate_data(self):  # Model
+    def integrate_data(self):  # MicroscopeDevice
         self.isAcquisitionDone = False
         if self.expositionCounter < self.integrationCountAcq - 2:
             self.movingIntegrationData.append(self.liveAcquisitionData)
@@ -524,7 +524,7 @@ class MicroRamanView(QWidget, Ui_microRamanView):  # type: QWidget
     def read_data_live(self):
         return self.spec.intensities()[2:]
 
-    def stop_acq(self):  # Model
+    def stop_acq(self):  # MicroscopeDevice
         if self.isSweepThreadAlive:
             self.sweepThread.quit()
             self.isSweepThreadAlive = False
@@ -622,7 +622,7 @@ class MicroRamanView(QWidget, Ui_microRamanView):  # type: QWidget
         self.sb_lowBlue.setValue(round((self.rangeLen * (2 / 3)) + self.minWaveLength + 1))
         self.sb_highBlue.setValue(self.maxWaveLength)
 
-    def matrix_raw_data_replace(self):  # Model
+    def matrix_raw_data_replace(self):  # MicroscopeDevice
         self.matrixRawData[self.countHeight, self.countWidth, :] = np.array(self.dataPixel)
         self.dataPixel = []
         self.start_save(self.matrixRawData[self.countHeight, self.countWidth, :], self.countHeight, self.countWidth)
@@ -690,7 +690,7 @@ class MicroRamanView(QWidget, Ui_microRamanView):  # type: QWidget
             pass
 
     # Begin loop
-    def begin(self):  # Model
+    def begin(self):  # MicroscopeDevice
         if not self.isSweepThreadAlive:
             if self.folderPath == "":
                 self.error_folder_name()
@@ -774,24 +774,24 @@ class MicroRamanView(QWidget, Ui_microRamanView):  # type: QWidget
             else:
                 self.stop_acq()
 
-    def move_stage(self):  # Model
+    def move_stage(self):  # MicroscopeDevice
         self.stageDevice.moveTo((self.positionSutter[0]+self.countWidth*self.step*self.order,
                                  self.positionSutter[1]+self.countHeight*self.step*self.order,
                                  self.positionSutter[2]))
 
     # Save
-    def start_save(self, data=None, countHeight=None, countWidth=None):  # Model
+    def start_save(self, data=None, countHeight=None, countWidth=None):  # MicroscopeDevice
         self.heightId = countHeight
         self.widthId = countWidth
         self.data = data
         self.save_capture_csv()
 
-    def select_save_folder(self):  # GUI? Controller? Model? TODO
+    def select_save_folder(self):  # GUI? Controller? MicroscopeDevice? TODO
         self.folderPath = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
         if self.folderPath != "":
             self.le_folderPath.setText(self.folderPath)
 
-    def save_capture_csv(self):  # Model
+    def save_capture_csv(self):  # MicroscopeDevice
         if self.data is None:
             pass
         else:
@@ -882,7 +882,7 @@ class MicroRamanView(QWidget, Ui_microRamanView):  # type: QWidget
 
             f.close()
 
-    def save_matrix_data_without_background(self):  # Model
+    def save_matrix_data_without_background(self):  # MicroscopeDevice
         if not list(self.backgroundData):
             self.error_background()
         else:
@@ -891,7 +891,7 @@ class MicroRamanView(QWidget, Ui_microRamanView):  # type: QWidget
             self.saveThread.start()
             self.enable_all_buttons()
 
-    def save_data_without_background(self, *args, **kwargs):  # Model
+    def save_data_without_background(self, *args, **kwargs):  # MicroscopeDevice
         matrix = self.matrixDataWithoutBackground
         newPath = self.folderPath + "/" + "UnrawData"
         os.makedirs(newPath, exist_ok=True)

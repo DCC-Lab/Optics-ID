@@ -9,14 +9,14 @@ from threading import *
 import time
 from gui.modules import mockSpectrometer as Mock
 from tools.CircularList import RingBuffer
-from model.microscopeDevice import Model
+from model.microscopeDevice import MicroscopeDevice
 import hardwarelibrary.motion.sutterdevice as sutter
 from hardwarelibrary.notificationcenter import NotificationCenter as notif
 
 class AppControl():
     def __init__(self):
         self.HSI = HyperSpectralImage()
-        self.Model = Model()
+        self.Model = MicroscopeDevice()
         self.windowControl = None
         self.microControl = None
 
@@ -133,7 +133,7 @@ class AppControl():
 
     def acquireBackground(self):
         # with self.lock:
-        #     self.backgroundLoop = Thread(target=self.Model.acquireBackground, name="acquireBackgroundThread")
+        #     self.backgroundLoop = Thread(target=self.MicroscopeDevice.acquireBackground, name="acquireBackgroundThread")
         # self.backgroundLoop.start()
         # self.backgroundLoop.join()
         self.Model.acquireBackground()

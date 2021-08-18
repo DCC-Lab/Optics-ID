@@ -16,7 +16,7 @@ class Background(NamedTuple):
     spectrum: list = None
 
 
-class Model:
+class MicroscopeDevice:
     def __init__(self, stage=None, detection=None):
         notif().addObserver(self, self.stopAcq, "Interrupt acquisition")
         self.lock = Lock()
@@ -79,7 +79,7 @@ class Model:
     def createBackgroundTuple(self, spectrum):
         Background(spectrum=spectrum)
 
-    def conditions(self, width=None, height=None, step=None, measureUnit=None):
+    def validateConditions(self, width=None, height=None, step=None, measureUnit=None):
         if step is None:
             step = self._step
         if measureUnit is None:
