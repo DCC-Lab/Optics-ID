@@ -186,7 +186,6 @@ class AppControl():
         self.windowControl.acquisitionDone()
         self.copyDataToFolderPath()
 
-
     def getFileName(self):
         return self.fileName
 
