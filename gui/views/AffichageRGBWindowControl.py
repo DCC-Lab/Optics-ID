@@ -40,7 +40,6 @@ class WindowControl(QWidget, Ui_MainWindow):
 
         self.sliderPositionIsSet = False
         self.globalMaximum = True
-        self.folderPath = ""
         self.subtractBackground = False
 
         self.mousePositionX = 0
@@ -133,8 +132,7 @@ class WindowControl(QWidget, Ui_MainWindow):
                 self.mousePositionX = positionX
                 self.mousePositionY = positionY
                 waves = self.appControl.waves()
-                matrixData = self.appControl.matrixData(self.subtractBackground)
-                self.updateSpectrumPlot(waves, matrixData)
+                self.updateSpectrumPlot(waves)
         except Exception as e:
             pass
 
@@ -150,9 +148,7 @@ class WindowControl(QWidget, Ui_MainWindow):
             self.globalMaximum = True
         else:
             self.globalMaximum = False
-        self.appControl.loadData(self.folderPath)
         matrixRGB = self.appControl.matrixRGB(self.globalMaximum, self.subtractBackground)
-        matrixData = self.appControl.matrixData(self.subtractBackground)
         waves = self.appControl.waves()
         self.updateRGBPlot(matrixRGB)
 
@@ -199,14 +195,14 @@ class WindowControl(QWidget, Ui_MainWindow):
 
     def selectSaveFolder(self):
         try:
-            self.folderPath = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
+            folderPath = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
             self.appControl.deleteSpectra()
             self.appControl.deleteBackground()
             self.appControl.deleteWaves()
-            foundBackground = self.appControl.loadData(self.folderPath)
+            self.appControl.setFolderPath(folderPath)
+            foundBackground = self.appControl.loadData()
             self.subtractBackground = False
             matrixRGB = self.appControl.matrixRGB(self.globalMaximum, self.subtractBackground)
-            matrixData = self.appControl.matrixData()
             waves = self.appControl.waves()
 
             self.mousePositionY = 0
@@ -214,7 +210,7 @@ class WindowControl(QWidget, Ui_MainWindow):
             self.createPlotRGB()
             self.createPlotSpectrum()
             self.setRangeToWave()
-            self.updateSpectrumPlot(waves, matrixData)
+            self.updateSpectrumPlot(waves)
             self.updateRGBPlot(matrixRGB)
             self.pb_saveImage.setEnabled(True)
             self.pb_saveImage.setStyleSheet("")
@@ -228,7 +224,6 @@ class WindowControl(QWidget, Ui_MainWindow):
                 self.cb_subtractbg.setCheckState(False)
                 self.cb_subtractbg.setEnabled(False)
         except Exception as e:
-            print(e)
             pass
 
     def subtractBg(self):
@@ -237,9 +232,8 @@ class WindowControl(QWidget, Ui_MainWindow):
         if self.cb_subtractbg.checkState() == 0:
             self.subtractBackground = False
         matrixRGB = self.appControl.matrixRGB(self.globalMaximum, self.subtractBackground)
-        matrixData = self.appControl.matrixData(self.subtractBackground)
         waves = self.appControl.waves()
-        self.updateSpectrumPlot(waves, matrixData)
+        self.updateSpectrumPlot(waves)
         self.updateRGBPlot(matrixRGB)
 
     def updateRGBPlot(self, matrixRGB):
@@ -247,7 +241,7 @@ class WindowControl(QWidget, Ui_MainWindow):
         vb = pg.ImageItem(image=matrixRGB)
         self.plotViewBox.addItem(vb)
 
-    def updateSpectrumPlot(self, waves, matrixData):
+    def updateSpectrumPlot(self, waves):
         spectrum = self.appControl.spectrum(self.mousePositionX, self.mousePositionY, self.subtractBackground)
         try:
             maximum = max(spectrum)
@@ -297,9 +291,8 @@ class WindowControl(QWidget, Ui_MainWindow):
         if self.sliderPositionIsSet:
             try:
                 matrixRGB = self.appControl.matrixRGB(self.globalMaximum, self.subtractBackground)
-                matrixData = self.appControl.matrixData(self.subtractBackground)
                 waves = self.appControl.waves()
-                self.updateSpectrumPlot(waves, matrixData)
+                self.updateSpectrumPlot(waves)
                 self.updateRGBPlot(matrixRGB)
 
             except:

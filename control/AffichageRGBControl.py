@@ -6,8 +6,18 @@ from model.HyperSpectralImage import HyperSpectralImage
 
 class AppliControl():
     def __init__(self):
-        self.hsi = HyperSpectralImage()
+        self.hsi = HyperSpectralImage(createTempFolder=False)
         self.windowControl = None
+        self.folderPath = ""
+
+    def setFolderPath(self, folderPath):
+        """Set the folder path.
+        Args:
+            folderPath(str): The folder path to add to data.
+        """
+        if type(folderPath) is not str:
+            raise TypeError("folderpath argument is not a string.")
+        self.folderPath = folderPath
 
     def deleteBackground(self):
         self.hsi.deleteBackground()
@@ -18,54 +28,25 @@ class AppliControl():
     def deleteWaves(self):
         self.hsi.deleteWavelength()
 
-    def height(self):
-        height = self.hsi.heightImage(self.hsi.data)
-        return height
-
-    def loadData(self, path):
-        foundBackground = self.hsi.loadData(path)
-        self.hsi.folderPath = path
+    def loadData(self):
+        foundBackground = self.hsi.loadSpectra(self.folderPath)
         return foundBackground
-
-    def matrixData(self, subtractBackground=False):
-        if subtractBackground:
-            data = self.hsi.dataWithoutBackground()
-        else:
-            data = self.hsi.data
-        matrixData = self.hsi.matrixData(data)
-        return matrixData
 
     def matrixRGB(self, globalMaximum=True, subtractBackground=False):
         colorValues = self.windowControl.currentSliderValues()
-        if subtractBackground:
-            data = self.hsi.dataWithoutBackground()
-        else:
-            data = self.hsi.data
-        matrixRGB = self.hsi.matrixRGB(data, colorValues, globalMaximum)
+        matrixRGB = self.hsi.matrixRGB(colorValues, globalMaximum, subtractBackground=subtractBackground)
         return matrixRGB
 
     def saveImage(self, matrixRGB):
-        self.hsi.saveImage(matrixRGB)
+        self.hsi.saveAsImage(matrixRGB, self.folderPath, "")
 
     def saveWithoutBackground(self):
-        self.hsi.saveDataWithoutBackground(alreadyWaveNumber=True)
+        self.hsi.saveSpectraWithoutBackground(self.folderPath, "spectrum", alreadyWaveNumber=True)
 
     def spectrum(self, x, y, subtractBackground=False):
-        if subtractBackground:
-            spectrum = self.hsi.spectrum(x, y, self.hsi.data)
-            background = self.hsi.background
-            spectrum = spectrum - background
-        else:
-            spectrum = self.hsi.spectrum(x, y, self.hsi.data)
+        spectrum = self.hsi.spectrum(x, y, subtractBackground=subtractBackground)
         return spectrum
-
-    def subtractBackground(self):
-        self.hsi.dataWithoutBackground()
 
     def waves(self):
         waves = self.hsi.wavelength
         return waves
-
-    def width(self):
-        width = self.hsi.widthImage(self.hsi.data)
-        return width

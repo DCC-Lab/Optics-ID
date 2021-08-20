@@ -13,6 +13,8 @@ from model.microscopeDevice import MicroscopeDevice
 import hardwarelibrary.motion.sutterdevice as sutter
 from hardwarelibrary.notificationcenter import NotificationCenter as notif
 
+from distutils.dir_util import copy_tree
+
 class AppControl():
     def __init__(self):
         self.HSI = HyperSpectralImage()
@@ -31,39 +33,56 @@ class AppControl():
         self.stage = False
         self.spectro = None
 
+        self.tempFolder = self.HSI.tempFolder
+        self.folderPath = ""
+        self.fileName = ""
+
         self.isLoopRGBRunning = False
         self.quitLoopRGB = True
         notif().addObserver(self, self.react, "Single acquisition done")
         notif().addObserver(self, self.acquisitionDone, "Map acquisition done or interrupted.")
 
+    def setFolderPath(self, folderPath):
+        """Set the folder path.
+        Args:
+            folderPath(str): The folder path to add to data.
+        """
+        if type(folderPath) is not str:
+            raise TypeError("folderpath argument is not a string.")
+        self.folderPath = folderPath
+        with open(self.folderPath + "/tempDirectoryPath.txt", "w+") as f:
+            f.write(f"{self.tempFolder}")
+
+    def setFileName(self, fileName):
+        """Set the file name.
+        Args:
+            fileName(str): The file name to add to data.
+        """
+        if type(fileName) is not str:
+            raise TypeError("file name argument is not a string.")
+        self.fileName = fileName
+
     def react(self, notification):
-        point_x = notification.userInfo["point_x"]
-        point_y = notification.userInfo["point_y"]
+        pointX = notification.userInfo["point_x"]
+        pointY = notification.userInfo["point_y"]
         spectrum = notification.userInfo["spectrum"]
 
-        self.addSpectrum(point_x, point_y, spectrum)
-        self.saveThread = Thread(target=self.savePixel, args=(point_x, point_y, spectrum))
+        self.saveThread = Thread(target=self.HSI.addSpectrum, args=(pointX, pointY, spectrum))
         self.saveThread.start()
-        # self.savePixel(point_x, point_y, spectrum)
 
     def matrixRGB(self, globalMaximum=True, subtractBackground=False):
         width, height = self.windowControl.dimensionImage()
         colorValues = self.windowControl.currentSliderValues()
         with self.lock:
-            if subtractBackground:
-                data = self.HSI.dataWithoutBackground()
-            else:
-                data = self.HSI.data
-        matrixRGB = self.HSI.matrixRGB(data, colorValues, globalMaximum, width, height)
+            matrixRGB = self.HSI.matrixRGB(colorValues, globalMaximum, width, height, subtractBackground)
         return matrixRGB
 
-    def waves(self, laser):
+    def waves(self):
         with self.lock:
-            wavelength = self.HSI.wavelength
-        if self.windowControl.waveNumber:
-            waves = self.HSI.waveNumber(wavelength, laser)
-        else:
-            waves = self.HSI.wavelength
+            if self.windowControl.waveNumber:
+                waves = self.HSI.waveNumber()
+            else:
+                waves = self.HSI.wavelength
         return waves
 
     # def loadData(self, path):
@@ -72,12 +91,7 @@ class AppControl():
 
     def spectrum(self, x, y, subtractBackground=False):
         with self.lock:
-            if subtractBackground:
-                spectrum = self.HSI.spectrum(x, y, self.HSI.data)
-                background = self.HSI.background
-                spectrum = spectrum - background
-            else:
-                spectrum = self.HSI.spectrum(x, y, self.HSI.data)
+            spectrum = self.HSI.spectrum(x, y, subtractBackground)
         return spectrum
 
     def deleteSpectra(self):
@@ -91,18 +105,6 @@ class AppControl():
     def setWavelength(self, waves):
         self.HSI.setWavelength(waves)
 
-    def saveImage(self, matrixRGB):
-        self.HSI.saveImage(matrixRGB)
-
-    def setFolderPath(self, folderPath):
-        self.HSI.setFolderPath(folderPath)
-
-    def setFileName(self, fileName):
-        self.HSI.setFileName(fileName)
-
-    def saveWithoutBackground(self):
-        self.HSI.saveDataWithoutBackground()
-
     def setLaserWavelength(self, laser):
         self.HSI.setLaserWavelength(laser)
 
@@ -111,7 +113,6 @@ class AppControl():
 
     def setHeight(self, height):
         self.Model.height = height
-        
 
     def setStep(self, step):
         self.Model.step = step
@@ -141,9 +142,6 @@ class AppControl():
         self.HSI.setBackground(background)
         self.saveBackground()
 
-    def saveBackground(self):
-        self.HSI.saveCaptureCSV(data=self.HSI.background)
-
     def launchAcquisition(self):
         # with self.lock:
         if not self.Model.isAcquiring:
@@ -172,11 +170,6 @@ class AppControl():
         with self.lock:
             self.HSI.addSpectrum(x, y, spectrum)
 
-    def savePixel(self, x, y, spectrum):
-        with self.lock:
-            spectro = spectrum
-        self.HSI.saveCaptureCSV(data=spectro, countHeight=y, countWidth=x)
-
     def stopAcquisition(self):
         with self.lock:
             self.quitLoopRGB = True
@@ -191,10 +184,11 @@ class AppControl():
             self.quitLoopRGB = True
             self.isLoopRGBRunning = False
         self.windowControl.acquisitionDone()
+        self.copyDataToFolderPath()
+
 
     def getFileName(self):
-        fileName = self.windowControl.fileName()
-        return fileName
+        return self.fileName
 
     def getLaser(self):
         laser = self.HSI.laser
@@ -270,4 +264,18 @@ class AppControl():
             self.spectro._source = "halogen"
         elif index == 1:
             self.spectro._source = "random"
+
+    def saveBackground(self):
+        self.HSI.saveSpectrum(self.tempFolder, self.fileName)
+        self.copyDataToFolderPath()
+
+    def saveImage(self, matrixRGB):
+        self.HSI.saveAsImage(matrixRGB, self.tempFolder, self.fileName)
+        self.copyDataToFolderPath()
+
+    def saveWithoutBackground(self):
+        self.HSI.saveSpectraWithoutBackground(self.folderPath, self.fileName)
+
+    def copyDataToFolderPath(self):
+        copy_tree(f"{self.tempFolder}", f"{self.folderPath}")
 

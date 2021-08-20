@@ -269,6 +269,18 @@ class WindowControl(QWidget, Ui_MainWindow):
                 else:
                     self.cb_lightSource.setStyleSheet("QCheckBox::indicator{background-color: rgb(80, 80, 80);}")
                 self.cb_detection.setStyleSheet("QCheckBox::indicator{background-color: rgb(0, 255, 0);}")
+                self.sb_exposure.setEnabled(True)
+                self.sb_acqTime.setEnabled(True)
+                self.pb_background.setEnabled(True)
+                self.pb_launch.setEnabled(True)
+                self.pb_stop.setEnabled(True)
+                self.sb_exposure.setStyleSheet("")
+                self.sb_acqTime.setStyleSheet("")
+                self.pb_background.setStyleSheet("")
+                self.pb_launch.setStyleSheet("")
+                self.pb_stop.setStyleSheet("")
+
+
             except Exception as e:
                 print(e)
                 self.errorLaser()
@@ -284,6 +296,15 @@ class WindowControl(QWidget, Ui_MainWindow):
         index = self.cmb_selectStage.currentIndex()
         self.appControl.connectStage(index)
         self.cb_stage.setStyleSheet("QCheckBox::indicator{background-color: rgb(0, 255, 0);}")
+        self.sb_width.setEnabled(True)
+        self.sb_height.setEnabled(True)
+        self.sb_step.setEnabled(True)
+        self.cmb_measureUnit.setEnabled(True)
+        self.sb_width.setStyleSheet("")
+        self.sb_height.setStyleSheet("")
+        self.sb_step.setStyleSheet("")
+        self.cmb_measureUnit.setStyleSheet("")
+
 
     def errorDetection(self):
         self.pb_connectDetection.setStyleSheet("background-color: rgb(255, 0, 0)")
@@ -332,9 +353,8 @@ class WindowControl(QWidget, Ui_MainWindow):
                 self.subtractBackground = True
             if self.cb_subtractBackground.checkState() == 0:
                 self.subtractBackground = False
-            laser = self.appControl.getLaser()
             matrixRGB = self.appControl.matrixRGB(self.globalMaximum, self.subtractBackground)
-            waves = self.appControl.waves(laser)
+            waves = self.appControl.waves()
             self.updateSpectrumPlot(waves)
             self.updateRGBPlot(matrixRGB)
 
@@ -552,8 +572,7 @@ class WindowControl(QWidget, Ui_MainWindow):
             else:
                 self.mousePositionX = positionX
                 self.mousePositionY = positionY
-                laser = self.appControl.getLaser()
-                waves = self.appControl.waves(laser)
+                waves = self.appControl.waves()
                 self.updateSpectrumPlot(waves)
         except Exception as e:
             pass
@@ -564,9 +583,8 @@ class WindowControl(QWidget, Ui_MainWindow):
         else:
             self.globalMaximum = False
         try:
-            laser = self.appControl.getLaser()
             matrixRGB = self.appControl.matrixRGB(self.globalMaximum, self.subtractBackground)
-            waves = self.appControl.waves(laser)
+            waves = self.appControl.waves()
             self.updateRGBPlot(matrixRGB)
         except:
             pass
@@ -584,9 +602,8 @@ class WindowControl(QWidget, Ui_MainWindow):
         if self.cmb_wave.currentIndex() == 0: 
             self.waveNumber = True
         else:
-            self.waveNumber = False 
-        laser = self.appControl.getLaser()
-        waves = self.appControl.waves(laser)
+            self.waveNumber = False
+        waves = self.appControl.waves()
 
         self.minWave = round(min(waves))
         self.rangeLen = round(max(waves) - min(waves))
@@ -693,9 +710,8 @@ class WindowControl(QWidget, Ui_MainWindow):
 
         if self.sliderPositionIsSet:
             try:
-                laser = self.appControl.getLaser()
                 matrixRGB = self.appControl.matrixRGB(self.globalMaximum, self.subtractBackground)
-                waves = self.appControl.waves(laser)
+                waves = self.appControl.waves()
                 self.updateSpectrumPlot(waves)
                 self.updateRGBPlot(matrixRGB)
 
@@ -710,8 +726,7 @@ class WindowControl(QWidget, Ui_MainWindow):
         if self.cb_colorRangeView.checkState() == 0:
             self.showColorRange = False
         try:
-            laser = self.appControl.getLaser()
-            waves = self.appControl.waves(laser)
+            waves = self.appControl.waves()
             self.updateSpectrumPlot(waves)
         except Exception:
             pass
