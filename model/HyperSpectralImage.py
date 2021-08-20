@@ -25,15 +25,6 @@ class HyperSpectralImage:
         self.folderPath = ""
         self.fileName = ""
 
-    def dataWithoutBackground(self):
-        dataWithoutBg = []
-        for item in self.data:
-            x = item.x
-            y = item.y
-            spectrum = np.array(item.spectrum) - np.array(self.background)
-            dataWithoutBg.append(Pixel(x, y, spectrum))
-        return dataWithoutBg
-
     @property
     def ramanShifts(self):
         if self.excitationWavelength is not None and len(self.wavelengths) > 0:
@@ -47,53 +38,32 @@ class HyperSpectralImage:
         else:
             raise ValueError("You must set the excitationWavelength to compute the frequency shift in wavenumbers")
 
-    @property
-    def data(self):
-        return self.spectralPoints
+    def addSpectralPointAt(self, x, y, spectrum):
+        self.spectralPoints.append(SpectralPoint(x, y, spectrum))
 
-    @property
-    def laser(self):
-        return self.excitationWavelength
-    
-    def setFolderPath(self, folderPath):
-        self.folderPath = folderPath
+    def getSpectralPointAt(self, x, y, data):
+        spectra = []
+        for spectralPoint in self.spectralPoints:
+            if spectralPoint.x == x and spectralPoint.y == y:
+                spectra.append(np.array(spectralPoint.spectrum))
 
-    def setFileName(self, fileName):
-        self.fileName = fileName
-
-    def setBackground(self, background):
-        self.backgroundIntensity = background
-
-    def setWavelength(self, wavelength):
-        self.wavelengths = np.array(wavelength)
-
-    def deleteWavelength(self):
-        self.wavelengths = []
-
-    def deleteBackground(self):
-        self.background = []
-
-    def deleteSpectra(self):
-        self.data = []
-
-    def waveNumber(self, waves, laser=None):
-        if self.excitationWavelength != laser:
-            print("Set excitationWavelength in HyperSpectralImage to the laser wavelength")
-            self.excitationWavelength = laser
-
-        return self.ramanShifts()
-
-    def addSpectrum(self, x, y, spectrum):
-        self.data.append(SpectralPoint(x, y, spectrum))
-
-    def spectrum(self, x, y, data):
-        spectrum = None
-        for item in data:
-            if item.x == x:
-                if item.y == y:
-                    spectrum = np.array(item.spectrum)
+        if len(spectra) == 1:
+            return spectra[0]
+        elif len(spectra) == 0:
+            raise ValueError("No spectrum acquired at {0},{1}".format(x,y))
+        elif len(spectra) > 0:
+            raise ValueError("More than one spectrum acquired at {0},{1}".format(x,y))
 
         return spectrum
+
+    def dataWithoutBackground(self):
+        dataWithoutBg = []
+        for item in self.data:
+            x = item.x
+            y = item.y
+            spectrum = np.array(item.spectrum) - np.array(self.background)
+            dataWithoutBg.append(Pixel(x, y, spectrum))
+        return dataWithoutBg
 
     def widthImage(self, data):
         width = -1
@@ -295,3 +265,46 @@ class HyperSpectralImage:
                     for ind, x in enumerate(self.waveNumber(self.wavelengths)):
                         f.write(f"{x},{spectrum[ind]}\n")
                 f.close()
+
+    """
+    Compatibility layer
+
+    """
+    @property
+    def data(self):
+        return self.spectralPoints
+
+    @property
+    def laser(self):
+        return self.excitationWavelength
+    
+    def setFolderPath(self, folderPath):
+        self.folderPath = folderPath
+
+    def setFileName(self, fileName):
+        self.fileName = fileName
+
+    def setBackground(self, background):
+        self.backgroundIntensity = background
+
+    def setWavelength(self, wavelength):
+        self.wavelengths = np.array(wavelength)
+
+    def deleteWavelength(self):
+        self.wavelengths = []
+
+    def deleteBackground(self):
+        self.background = []
+
+    def deleteSpectra(self):
+        self.data = []
+
+    def waveNumber(self, waves, laser=None):
+        if self.excitationWavelength != laser:
+            print("Set excitationWavelength in HyperSpectralImage to the laser wavelength")
+            self.excitationWavelength = laser
+
+        return self.ramanShifts()
+
+    def addSpectrum(self, x, y, spectrum):
+        self.addSpectralPoint(x,y,spectrum)
