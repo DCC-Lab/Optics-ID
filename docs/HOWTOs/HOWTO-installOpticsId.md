@@ -4,6 +4,8 @@
 
 This tutorial should help you to install correctly the Optics-Id app, but more specificaly the microRamanView window. The first window, or filterView window, shall work on its own when the aforementioned installation is done.
 
+Please note that the app doesn't work yet with M1 chips and Windows computers.
+
 ## What is the Optics-Id app?
 
 ------
@@ -14,7 +16,7 @@ The Optics-Id app is your new best friend! It is designed to control simultaneou
 
 ------
 
-Once the program is rightfully installed, you can access [HOWTO-OpticsId](https://github.com/PyMarc2/Optics-ID) for more information on fonctionnalities and special features of the app.
+Once the program is rightfully installed, you can access [HOWTO-OpticsId](https://github.com/DCC-Lab/Optics-ID/tree/main/docs/HOWTOs) for more information on fonctionnalities and special features of the app.
 
 ## How to install Optics-Id on your computer?
 
@@ -22,9 +24,9 @@ Once the program is rightfully installed, you can access [HOWTO-OpticsId](https:
 
 1. First, you need to make sure that everything is up-to-date on your computer. In this version of the program, we are using a python interpreter 3.9 or 3.8, pycharm version 2021.1.3 (community edition), and BigSur (version 11.4) on macOS (click on the apple in the top-left corner of your screen, and then "about this Mac") or Windows 10 on a PC.
 
-2. Clone the repository. With the link for [Optics-ID](https://github.com/PyMarc2/Optics-ID/tree/benjustine-microraman), you will find a green "Code" button at the top-right corner of the page. Click on it.
+2. Clone the repository. With the link for [Optics-ID](https://github.com/DCC-Lab/Optics-ID), you will find a green "Code" button at the top-right corner of the page. Click on it.
 
-   ![github](https://github.com/PyMarc2/Optics-ID/blob/benjustine-microraman/docs/images/github.png)
+   ![github](https://github.com/DCC-Lab/Optics-ID/blob/main/docs/images/github.png)
 
    Then, click on the pad icon to copy the link. This will give you the url in case you want the dynamic code. You can also download the ZIP if you simply want the code at its current state, but the first option is preferred. 
 
@@ -50,7 +52,7 @@ Once the program is rightfully installed, you can access [HOWTO-OpticsId](https:
 
    3. You will know that you have been successful when you can read "(venv)" at the beginning of the command line.
 
-      ![venv](https://github.com/PyMarc2/Optics-ID/blob/benjustine-microraman/docs/images/venv.png)
+      ![venv](https://github.com/DCC-Lab/Optics-ID/blob/main/docs/images/venv.png)
 
       This means that your venv exists and is activated.
 
@@ -198,7 +200,7 @@ Once the program is rightfully installed, you can access [HOWTO-OpticsId](https:
 
 You can now proceed with your research and let our app marvel you, as well as awaken your curiosity.
 
-![GUI](https://github.com/PyMarc2/Optics-ID/blob/benjustine-microraman/docs/images/raman12.png)
+![GUI](https://github.com/DCC-Lab/Optics-ID/blob/main/docs/images/raman12.png)
 
 ------
 

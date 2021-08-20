@@ -155,7 +155,7 @@ class AppControl():
         return self.stage
 
     def spectroConnected(self):
-        if self.spectro == None:
+        if self.spectro is None:
             return False
         else:
             return True
@@ -278,4 +278,3 @@ class AppControl():
 
     def copyDataToFolderPath(self):
         copy_tree(f"{self.tempFolder}", f"{self.folderPath}")
-
