@@ -3,6 +3,7 @@ from hardwarelibrary.notificationcenter import NotificationCenter as notif
 from tools.CircularList import RingBuffer
 import numpy as np
 from threading import Lock
+# from hardwarelibrary.motion.sutterdevice import Direction
 
 
 class DataPoint(NamedTuple):
@@ -168,10 +169,10 @@ class MicroscopeDevice:
         self._integrationTime = integration
 
     def setDirectionToDefault(self):  # TODO update those functions to only one??
-        self._direction = "same"
+        self._direction = "unidirectional"  # Direction.unidirectional
 
     def setDirectionToZigzag(self):
-        self._direction = "other"
+        self._direction = "bidirectional"  # Direction.bidirectional
 
     def resetMovingIntegrationData(self):
         self.movingIntegrationData = None
@@ -268,11 +269,11 @@ class MicroscopeDevice:
             if not self.isAcquiring:
                 self.isAcquiring = True
                 self.countSpectrum = 0
-                self.countHeight = 0
-                self.countWidth = 0
             else:
                 return False
         self.startExposureTime()
+        self.points = self._stage.mapPositions(self._width, self._height, self._step*self._stepMeasureUnit,
+                                               self._direction)
         self.map()
 
     def map(self):
@@ -281,62 +282,20 @@ class MicroscopeDevice:
         while inProgress:
             if self.countSpectrum <= (self._width * self._height):
                 dataPoint = self.spectrumPixelAcquisition()
-                self.dataMap.append(self.createDataPoint(self.countWidth, self.countHeight, dataPoint))
-                notif().postNotification("Single acquisition done", self, userInfo={"point_x": self.countWidth,
-                                                                                    "point_y": self.countHeight,
+                index = self.points[self.countSpectrum+1]["index"]
+                self.dataMap.append(self.createDataPoint(index[0], index[1], dataPoint))
+                notif().postNotification("Single acquisition done", self, userInfo={"point_x": index[0],
+                                                                                    "point_y": index[1],
                                                                                     "spectrum": dataPoint,
                                                                                     "spectra": self.dataMap})
-
-                if self._direction == "same":
-                    try:
-                        if self.countWidth < (self._width - 1):
-                            self.countWidth += 1
-                            self.moveStage()
-                        elif self.countHeight < (self._height - 1) and self.countWidth == (self._width - 1):
-                            self.countWidth = 0
-                            self.countHeight += 1
-                            self.moveStage()
-                        else:
-                            self.stopAcq()
-
-                    except Exception as e:
-                        print(f'error in map same: {e}')
-                        self.stopAcq()
-
-                elif self._direction == "other":
-                    try:
-                        if self.countHeight % 2 == 0:
-                            if self.countWidth < (self._width - 1):
-                                self.countWidth += 1
-                                self.moveStage()
-                            elif self.countWidth == (self._width - 1) and self.countHeight < (self._height - 1):
-                                self.countHeight += 1
-                                self.moveStage()
-                            else:
-                                self.stopAcq()
-                        elif self.countHeight % 2 == 1:
-                            if self.countWidth > 0:
-                                self.countWidth -= 1
-                                self.moveStage()
-                            elif self.countWidth == 0 and self.countHeight < (self._height - 1):
-                                self.countHeight += 1
-                                self.moveStage()
-                            else:
-                                self.stopAcq()
-                    except Exception as e:
-                        print(f'error in map other: {e}')
-                        self.stopAcq()
-
+                position = self.points[self.countSpectrum+1]["position"]
+                self.moveStage(position)
                 self.countSpectrum += 1
                 with self.lock:
                     inProgress = self.isAcquiring
-
             else:
                 inProgress = False
                 self.stopAcq()
-        # pass
 
-    def moveStage(self):
-        self._stage.moveTo((self._stagePosition[0] + self.countWidth * self.step * self.stepMeasureUnit,
-                               self._stagePosition[1] + self.countHeight * self.step * self.stepMeasureUnit,
-                               self._stagePosition[2]))
+    def moveStage(self, position):
+        self._stage.moveTo(position)
