@@ -100,7 +100,7 @@ class MicroscopeDevice:
 
     @width.setter
     def width(self, width):
-        self.conditions(width=width)
+        self.validateConditions(width=width)
         if width <= 0:
             raise ValueError("Images will be mapped strictly with positive coordinates.")
         self._width = width
@@ -111,7 +111,7 @@ class MicroscopeDevice:
 
     @height.setter
     def height(self, height):
-        self.conditions(height=height)
+        self.validateConditions(height=height)
         if height <= 0:
             raise ValueError("Images will be mapped strictly with positive coordinates.")
         self._height = height
@@ -122,7 +122,7 @@ class MicroscopeDevice:
 
     @step.setter
     def step(self, step):
-        self.conditions(step=step)
+        self.validateConditions(step=step)
         if step <= 0:
             raise ValueError("Images will be mapped strictly with positive coordinates.")
         self._step = step
@@ -134,15 +134,15 @@ class MicroscopeDevice:
     @stepMeasureUnit.setter
     def stepMeasureUnit(self, unit):
         if unit == 'mm':
-            self.conditions(measureUnit=10**3)
+            self.validateConditions(measureUnit=10**3)
             self._stepMeasureUnit = 10**3
 
         elif unit == 'um':
-            self.conditions(measureUnit=1)
+            self.validateConditions(measureUnit=1)
             self._stepMeasureUnit = 1
 
         elif unit == 'nm':
-            self.conditions(measureUnit=10**(-3))
+            self.validateConditions(measureUnit=10**(-3))
             self._stepMeasureUnit = 10**(-3)
 
     @property
@@ -263,7 +263,7 @@ class MicroscopeDevice:
 
     # Begin loop
     def begin(self):
-        self.conditions()
+        self.validateConditions()
         with self.lock:
             if not self.isAcquiring:
                 self.isAcquiring = True
