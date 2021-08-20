@@ -263,17 +263,3 @@ class AppControl():
             self.spectro._source = "halogen"
         elif index == 1:
             self.spectro._source = "random"
-
-    def saveBackground(self):
-        self.HSI.saveSpectrum(self.tempFolder, self.fileName)
-        self.copyDataToFolderPath()
-
-    def saveImage(self, matrixRGB):
-        self.HSI.saveAsImage(matrixRGB, self.tempFolder, self.fileName)
-        self.copyDataToFolderPath()
-
-    def saveWithoutBackground(self):
-        self.HSI.saveSpectraWithoutBackground(self.folderPath, self.fileName)
-
-    def copyDataToFolderPath(self):
-        copy_tree(f"{self.tempFolder}", f"{self.folderPath}")
