@@ -20,7 +20,6 @@ class AppControl():
         self.HSI = HyperSpectralImage()
         self.Model = MicroscopeDevice()
         self.windowControl = None
-        self.microControl = None
 
         self.stageDevices = []  # find list from hardware...  # TODO
         self.listStageDevices()
@@ -50,7 +49,10 @@ class AppControl():
         if type(folderPath) is not str:
             raise TypeError("folderpath argument is not a string.")
         self.folderPath = folderPath
-        with open(self.folderPath + "/tempDirectoryPath.txt", "w+") as f:
+        path = self.folderPath + "/tempDirectoryPath.txt"
+        if os.path.exists(path):
+            os.remove(path)
+        with open(path, "w+") as f:
             f.write(f"{self.tempFolder}")
 
     def setFileName(self, fileName):
