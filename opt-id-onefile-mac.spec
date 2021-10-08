@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['opt-id.py'],
-             pathex=['C:\\Users\\marc-\\Documents\\Github\\DCC\\Optics-ID'],
+             pathex=['/Users/dcclab/Documents/Github/Optics-ID'],
              binaries=[],
              datas=[('gui/modules/*', 'gui/modules/'), ('gui/dialog/*', 'gui/dialog/'),
              ('gui/views/*', 'gui/views/'), ('gui/widgets/*', 'gui/widgets/'),
@@ -32,9 +32,9 @@ exe = EXE(pyz,
           upx=True,
           upx_exclude=[],
           runtime_tmpdir=None,
-          console=False , icon='/Users/marc-andrevigneault/Documents/Github/DCCLAB/Optics-ID/gui/misc/logo/logo3.ico')
+          console=False , icon='/Users/dcclab/Documents/Github/Optics-ID/gui/misc/logo/logo3.ico')
 
 app = BUNDLE(exe,
          name='opt-id.app',
-         icon='/Users/marc-andrevigneault/Documents/Github/DCCLAB/Optics-ID/gui/misc/logo/logo3.ico',
+         icon='/Users/dcclab/Documents/Github/Optics-ID/gui/misc/logo/logo3.ico',
          bundle_identifier='opy-id')
